@@ -8,8 +8,8 @@ app = Flask(__name__)
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
-app.config['MYSQL_DATABASE_DB'] = 'user'
-app.config['MYSQL_DATABASE_HOST'] = 'localhost:3306'
+app.config['MYSQL_DATABASE_DB'] = 'student_app_db'
+app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
 
@@ -28,9 +28,10 @@ def getUser():
     # mysql connection
     conn = mysql.connect()
     cursor = conn.cursor()
-    cursor.execute("SELECT * from user")
-    data = cursor.fetchone()
-    return data
+    cursor.execute("SELECT * from student")
+    data = cursor.fetchall()
+    # print data
+    return jsonify(data)
 
 
 @app.route('/status')
