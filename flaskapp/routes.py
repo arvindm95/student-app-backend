@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 import json
@@ -65,9 +65,20 @@ def getStudent(student_id):
     return jsonify(response)
 
 
+@app.route('/student/add', methods=['POST'])
+def postStudent():
+    requestJson = request.json
+    student = Student(requestJson['student_id'], requestJson['student_name'], requestJson['student_email'],
+                      requestJson['student_username'], requestJson['student_password'], requestJson['student_department'])
+    db.session.add(student)
+    db.session.commit()
+
+    return jsonify({'status': 'success'})
+
+
 @app.route('/status')
 def getStatus():
-    #response.headers['Content-Type'] = 'application/json'
+    # response.headers['Content-Type'] = 'application/json'
     return jsonify({'status': 'service working'})
 
 
