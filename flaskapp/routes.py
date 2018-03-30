@@ -21,23 +21,21 @@ class Serializer(object):
 
 class Student(db.Model, Serializer):
     student_id = db.Column(db.Integer, primary_key=True)
-    student_name = db.Column(db.String(45))
-    student_email = db.Column(db.String(45))
-    student_username = db.Column(db.String(45))
-    student_password = db.Column(db.String(45))
+    student_first_name = db.Column(db.String(45))
+    student_last_name = db.Column(db.String(45))
     student_department = db.Column(db.String(45))
+    student_regno = db.Column(db.String(45))
 
-    def __init__(self, student_id, student_name, student_email, student_username, student_password, student_department):
+    def __init__(self, student_id, student_first_name, student_last_name, student_department, student_regno):
         self.student_id = student_id
-        self.student_name = student_name
-        self.student_email = student_email
-        self.student_username = student_username
-        self.student_password = student_password
+        self.student_first_name = student_first_name
+        self.student_last_name = student_last_name
         self.student_department = student_department
+        self.student_regno = student_regno
 
     def serialize(self):
         d = Serializer.serialize(self)
-        del d['student_password']
+        # del d['student_password']
         return d
 
 
