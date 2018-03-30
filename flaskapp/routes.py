@@ -75,7 +75,7 @@ def postStudent():
 
 
 @app.route('/student/delete/<student_id>', methods=['DELETE'])
-def postDelete(student_id):
+def deleteStudent(student_id):
     student = Student.query.get(student_id)
     db.session.delete(student)
     db.session.commit()
