@@ -300,6 +300,15 @@ def getStudentQuestions(student_id):
     return jsonify(response)
 
 
+@app.route('/teacher/questions/<teacher_id>')
+def getTeacherQuestions(teacher_id):
+    student_id = request.args.get('student')
+    answers = Teacher_answers.query.filter_by(
+        teacher_id=teacher_id, student_id=student_id).all()
+    response = Teacher_answers.serialize_list(answers)
+    return jsonify(response)
+
+
 @app.route('/student/questions/save', methods=['POST'])
 def saveStudentAnswer():
     requestJson = request.json
@@ -309,6 +318,20 @@ def saveStudentAnswer():
     student = Student_answers.query.filter_by(
         student_id=student_id, question_id=question_id).first()
     student.question_answer = question_answer
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+
+@app.route('/teacher/questions/save', methods=['POST'])
+def saveTeacherAnswer():
+    requestJson = request.json
+    teacher_id = requestJson['teacher_id']
+    student_id = requestJson['student_id']
+    question_id = requestJson['question_id']
+    question_answer = requestJson['question_answer']
+    teacher = Teacher_answers.query.filter_by(teacher_id=teacher_id,
+                                              student_id=student_id, question_id=question_id).first()
+    teacher.question_answer = question_answer
     db.session.commit()
     return jsonify({'status': 'success'})
 
