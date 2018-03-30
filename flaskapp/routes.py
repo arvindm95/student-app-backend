@@ -127,8 +127,14 @@ def about():
 @app.route('/student/all')
 def getAllStudents():
     students = Student.query.order_by(Student.student_first_name).all()
-    response = Student.serialize_list(students)
-    return jsonify(response)
+    students = Student.serialize_list(students)
+    for i in range(0, len(students)):
+        semester = Student_marks.query.filter_by(
+            student_id=students[i]['student_id'], semester=1).all()
+        semester = Student_marks.serialize_list(semester)
+        students[i]['student_marks'] = semester
+
+    return jsonify(students)
 
 
 @app.route('/student/<student_id>')
