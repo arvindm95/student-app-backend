@@ -84,6 +84,37 @@ class Student_marks(db.Model, Serializer):
         return d
 
 
+class Questions(db.Model, Serializer):
+    question_id = db.Column(db.Integer, primary_key=True)
+    question_description = db.Column(db.String(250))
+
+    def __init__(self, question_id, question_description):
+        self.question_id = question_id
+        self.question_description = question_description
+
+    def serialize(self):
+        d = Serializer.serialize(self)
+        return d
+
+
+class Student_answers(db.Model, Serializer):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer)
+    question_id = db.Column(db.Integer)
+    question_answer = db.Column(db.String(45))
+    question_description = db.Column(db.String(45))
+
+    def __init__(self, student_id, question_id, question_answer, question_description):
+        self.student_id = student_id
+        self.question_id = question_id
+        self.question_answer = question_answer
+        self.question_description = question_description
+
+    def serialize(self):
+        d = Serializer.serialize(self)
+        return d
+
+
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -150,7 +181,7 @@ def loginStudent():
 
 
 @app.route('/student/marks/<student_id>')
-def getMark(student_id):
+def getStudentMarks(student_id):
     length = 2
     response = list()
     for i in range(0, length):
@@ -163,6 +194,33 @@ def getMark(student_id):
         })
 
     return jsonify(response)
+
+
+@app.route('/student/questions/all')
+def getAllQuestions():
+    questions = Questions.query.all()
+    response = Questions.serialize_list(questions)
+    return jsonify(response)
+
+
+@app.route('/student/questions/<student_id>')
+def getStudentQuestions(student_id):
+    answers = Student_answers.query.filter_by(student_id=student_id).all()
+    response = Student_answers.serialize_list(answers)
+    return jsonify(response)
+
+
+@app.route('/student/questions/save', methods=['POST'])
+def saveStudentAnswer():
+    requestJson = request.json
+    student_id = requestJson['student_id']
+    question_id = requestJson['question_id']
+    question_answer = requestJson['question_answer']
+    student = Student_answers.query.filter_by(
+        student_id=student_id, question_id=question_id).first()
+    student.question_answer = question_answer
+    db.session.commit()
+    return jsonify({'status': 'success'})
 
 
 if __name__ == '__main__':
