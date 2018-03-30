@@ -66,11 +66,19 @@ def getStudent(student_id):
 @app.route('/student/add', methods=['POST'])
 def postStudent():
     requestJson = request.json
-    student = Student(requestJson['student_id'], requestJson['student_name'], requestJson['student_email'],
-                      requestJson['student_username'], requestJson['student_password'], requestJson['student_department'])
+    student = Student(requestJson['student_id'], requestJson['student_first_name'], requestJson['student_last_name'],
+                      requestJson['student_department'], requestJson['student_regno'])
     db.session.add(student)
     db.session.commit()
 
+    return jsonify({'status': 'success'})
+
+
+@app.route('/student/delete/<student_id>', methods=['DELETE'])
+def postDelete(student_id):
+    student = Student.query.get(student_id)
+    db.session.delete(student)
+    db.session.commit()
     return jsonify({'status': 'success'})
 
 
