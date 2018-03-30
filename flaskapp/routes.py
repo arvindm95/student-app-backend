@@ -84,7 +84,7 @@ class Student_marks(db.Model, Serializer):
         return d
 
 
-class Questions(db.Model, Serializer):
+class Student_questions(db.Model, Serializer):
     question_id = db.Column(db.Integer, primary_key=True)
     question_description = db.Column(db.String(250))
 
@@ -104,10 +104,9 @@ class Student_answers(db.Model, Serializer):
     question_answer = db.Column(db.String(45))
     question_description = db.Column(db.String(45))
 
-    def __init__(self, student_id, question_id, question_answer, question_description):
+    def __init__(self, student_id, question_id, question_description):
         self.student_id = student_id
         self.question_id = question_id
-        self.question_answer = question_answer
         self.question_description = question_description
 
     def serialize(self):
@@ -201,6 +200,23 @@ def getAllQuestions():
     questions = Questions.query.all()
     response = Questions.serialize_list(questions)
     return jsonify(response)
+
+
+@app.route('/student/questions/populate')
+def populateQuestions():
+    students = Student.query.order_by(Student.student_first_name).all()
+    students = Student.serialize_list(students)
+    questions = Student_questions.query.all()
+    questions = Student_questions.serialize_list(questions)
+
+    for i in range(0, len(students)):
+        for j in range(0, len(questions)):
+            student = Student_answers(
+                students[i]['student_id'], questions[j]['question_id'], questions[j]['question_description'])
+            db.session.add(student)
+            db.session.commit()
+
+    return jsonify({'status': 'success'})
 
 
 @app.route('/student/questions/<student_id>')
