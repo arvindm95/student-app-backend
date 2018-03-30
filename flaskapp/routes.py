@@ -45,6 +45,22 @@ class Student(db.Model, Serializer):
         return d
 
 
+class Teacher(db.Model, Serializer):
+    teacher_id = db.Column(db.Integer, primary_key=True)
+    teacher_first_name = db.Column(db.String(45))
+    teacher_last_name = db.Column(db.String(45))
+    email = db.Column(db.String(45))
+
+    def __init__(self, teacher_first_name, teacher_last_name, email):
+        self.teacher_first_name = teacher_first_name
+        self.teacher_last_name = teacher_last_name
+        self.email = email
+
+    def serialize(self):
+        d = Serializer.serialize(self)
+        return d
+
+
 class User(db.Model, Serializer):
     user_id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(45))
@@ -97,14 +113,46 @@ class Student_questions(db.Model, Serializer):
         return d
 
 
+class Teacher_questions(db.Model, Serializer):
+    question_id = db.Column(db.Integer, primary_key=True)
+    question_description = db.Column(db.String(250))
+
+    def __init__(self, question_id, question_description):
+        self.question_id = question_id
+        self.question_description = question_description
+
+    def serialize(self):
+        d = Serializer.serialize(self)
+        return d
+
+
 class Student_answers(db.Model, Serializer):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer)
     question_id = db.Column(db.Integer)
     question_answer = db.Column(db.String(45))
-    question_description = db.Column(db.String(45))
+    question_description = db.Column(db.String(250))
 
     def __init__(self, student_id, question_id, question_description):
+        self.student_id = student_id
+        self.question_id = question_id
+        self.question_description = question_description
+
+    def serialize(self):
+        d = Serializer.serialize(self)
+        return d
+
+
+class Teacher_answers(db.Model, Serializer):
+    id = db.Column(db.Integer, primary_key=True)
+    teacher_id = db.Column(db.Integer)
+    student_id = db.Column(db.Integer)
+    question_id = db.Column(db.Integer)
+    question_answer = db.Column(db.String(45))
+    question_description = db.Column(db.String(250))
+
+    def __init__(self, teacher_id, student_id, question_id, question_description):
+        self.teacher_id = teacher_id
         self.student_id = student_id
         self.question_id = question_id
         self.question_description = question_description
@@ -221,6 +269,26 @@ def populateQuestions():
                 students[i]['student_id'], questions[j]['question_id'], questions[j]['question_description'])
             db.session.add(student)
             db.session.commit()
+
+    return jsonify({'status': 'success'})
+
+
+@app.route('/teacher/questions/populate')
+def populateTeacherQuestions():
+    teachers = Teacher.query.order_by(Teacher.teacher_first_name).all()
+    teachers = Teacher.serialize_list(teachers)
+    students = Student.query.order_by(Student.student_first_name).all()
+    students = Student.serialize_list(students)
+    questions = Teacher_questions.query.all()
+    questions = Teacher_questions.serialize_list(questions)
+
+    for i in range(0, len(teachers)):
+        for j in range(0, len(students)):
+            for k in range(0, len(questions)):
+                teacher = Teacher_answers(teachers[i]['teacher_id'],
+                                          students[j]['student_id'], questions[k]['question_id'], questions[k]['question_description'])
+                db.session.add(teacher)
+                db.session.commit()
 
     return jsonify({'status': 'success'})
 
