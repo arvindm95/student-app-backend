@@ -2,14 +2,15 @@ from flask import Flask, render_template, jsonify, request
 from flask.ext.api import status
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
+from flask_cors import CORS, cross_origin
 import json
 
 app = Flask(__name__)
-
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/student_app_db'
 db = SQLAlchemy(app)
 
-response_failure = {'status': 'failure'}
+response_error = {'status': 'failure'}
 
 
 class Serializer(object):
@@ -28,12 +29,16 @@ class Student(db.Model, Serializer):
     student_last_name = db.Column(db.String(45))
     student_department = db.Column(db.String(45))
     student_regno = db.Column(db.String(45))
+    student_email = db.Column(db.String(45))
+    student_gender = db.Column(db.String(45))
 
-    def __init__(self, student_first_name, student_last_name, student_department, student_regno):
+    def __init__(self, student_first_name, student_last_name, student_department, student_regno, student_email, student_gender):
         self.student_first_name = student_first_name
         self.student_last_name = student_last_name
         self.student_department = student_department
         self.student_regno = student_regno
+        self.student_email = student_email
+        self.student_gender = student_gender
 
     def serialize(self):
         d = Serializer.serialize(self)
@@ -54,6 +59,28 @@ class User(db.Model, Serializer):
     def serialize(self):
         d = Serializer.serialize(self)
         del d['password']
+        return d
+
+
+class Student_marks(db.Model, Serializer):
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer)
+    subject_code = db.Column(db.String(45))
+    subject_name = db.Column(db.String(45))
+    subject_marks = db.Column(db.Integer)
+    semester = db.Column(db.Integer)
+
+    def __init__(self, student_id, subject_code, subject_name, subject_marks, semester):
+        self.student_id = student_id
+        self.subject_code = subject_code
+        self.subject_name = subject_name
+        self.subject_marks = subject_marks
+        self.semester = semester
+
+    def serialize(self):
+        d = Serializer.serialize(self)
+        del d['id']
+        del d['semester']
         return d
 
 
@@ -108,6 +135,7 @@ def getStatus():
 
 @app.route('/user/login', methods=['POST'])
 def loginStudent():
+
     email = request.json['email']
     password = request.json['password']
     student = User.query.filter_by(
@@ -117,8 +145,30 @@ def loginStudent():
         response = student.serialize()
         return jsonify(response)
 
-    response_failure['message'] = "user does not exist"
-    return jsonify(response_failure), status.HTTP_404_NOT_FOUND
+    response_error['message'] = "user does not exist"
+    return jsonify(response_error), status.HTTP_404_NOT_FOUND
+
+
+@app.route('/student/marks/<student_id>')
+def getMarks(student_id):
+    semester1 = Student_marks.query.filter_by(
+        student_id=student_id, semester=1).all()
+    serializedSemester1 = Student.serialize_list(semester1)
+    semester2 = Student_marks.query.filter_by(
+        student_id=student_id, semester=2).all()
+    serializedSemester2 = Student.serialize_list(semester2)
+
+    response = list()
+    response.append({
+        "semester": 1,
+        "semester_details": serializedSemester1
+    })
+    response.append({
+        "semester": 2,
+        "semester_details": serializedSemester2
+    })
+
+    return jsonify(response)
 
 
 if __name__ == '__main__':
