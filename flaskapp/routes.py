@@ -96,7 +96,7 @@ def about():
 
 @app.route('/student/all')
 def getAllStudents():
-    students = Student.query.all()
+    students = Student.query.order_by(Student.student_first_name).all()
     response = Student.serialize_list(students)
     return jsonify(response)
 
@@ -150,23 +150,17 @@ def loginStudent():
 
 
 @app.route('/student/marks/<student_id>')
-def getMarks(student_id):
-    semester1 = Student_marks.query.filter_by(
-        student_id=student_id, semester=1).all()
-    serializedSemester1 = Student.serialize_list(semester1)
-    semester2 = Student_marks.query.filter_by(
-        student_id=student_id, semester=2).all()
-    serializedSemester2 = Student.serialize_list(semester2)
-
+def getMark(student_id):
+    length = 2
     response = list()
-    response.append({
-        "semester": 1,
-        "semester_details": serializedSemester1
-    })
-    response.append({
-        "semester": 2,
-        "semester_details": serializedSemester2
-    })
+    for i in range(0, length):
+        semester = Student_marks.query.filter_by(
+            student_id=student_id, semester=i+1).all()
+        serializedSemester = Student.serialize_list(semester)
+        response.append({
+            "semester": i+1,
+            "semester_details": serializedSemester
+        })
 
     return jsonify(response)
 
