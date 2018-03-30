@@ -34,7 +34,23 @@ class Student(db.Model, Serializer):
 
     def serialize(self):
         d = Serializer.serialize(self)
-        # del d['student_password']
+        return d
+
+
+class User(db.Model, Serializer):
+    user_id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(45))
+    password = db.Column(db.String(45))
+    role_name = db.Column(db.String(45))
+
+    def __init__(self, email, password, role_name):
+        self.email = email
+        self.password = password
+        self.role_name = role_name
+
+    def serialize(self):
+        d = Serializer.serialize(self)
+        del d['password']
         return d
 
 
@@ -85,6 +101,14 @@ def deleteStudent(student_id):
 def getStatus():
     # response.headers['Content-Type'] = 'application/json'
     return jsonify({'status': 'service working'})
+
+
+@app.route('/user/login', methods=['POST'])
+def loginStudent():
+    email = request.json['email']
+    password = request.json['password']
+
+    return jsonify({'status': 'success'})
 
 
 if __name__ == '__main__':
