@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request
+from flask.ext.api import status
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.inspection import inspect
 import json
@@ -7,6 +8,8 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/student_app_db'
 db = SQLAlchemy(app)
+
+response_failure = {'status': 'failure'}
 
 
 class Serializer(object):
@@ -107,8 +110,15 @@ def getStatus():
 def loginStudent():
     email = request.json['email']
     password = request.json['password']
+    student = User.query.filter_by(
+        email=email, password=password).first()
 
-    return jsonify({'status': 'success'})
+    if student:
+        response = student.serialize()
+        return jsonify(response)
+
+    response_failure['message'] = "user does not exist"
+    return jsonify(response_failure), status.HTTP_404_NOT_FOUND
 
 
 if __name__ == '__main__':
