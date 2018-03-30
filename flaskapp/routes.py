@@ -26,8 +26,7 @@ class Student(db.Model, Serializer):
     student_department = db.Column(db.String(45))
     student_regno = db.Column(db.String(45))
 
-    def __init__(self, student_id, student_first_name, student_last_name, student_department, student_regno):
-        self.student_id = student_id
+    def __init__(self, student_first_name, student_last_name, student_department, student_regno):
         self.student_first_name = student_first_name
         self.student_last_name = student_last_name
         self.student_department = student_department
@@ -66,7 +65,7 @@ def getStudent(student_id):
 @app.route('/student/add', methods=['POST'])
 def postStudent():
     requestJson = request.json
-    student = Student(requestJson['student_id'], requestJson['student_first_name'], requestJson['student_last_name'],
+    student = Student(requestJson['student_first_name'], requestJson['student_last_name'],
                       requestJson['student_department'], requestJson['student_regno'])
     db.session.add(student)
     db.session.commit()
