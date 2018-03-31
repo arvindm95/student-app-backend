@@ -5,6 +5,11 @@ from sqlalchemy.inspection import inspect
 from flask_cors import CORS, cross_origin
 import json
 
+import smtplib
+from email.mime.multipart import MIMEMultipart
+#from email.MIMEMultipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 app = Flask(__name__)
 CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/student_app_db'
@@ -333,6 +338,32 @@ def saveTeacherAnswer():
                                               student_id=student_id, question_id=question_id).first()
     teacher.question_answer = question_answer
     db.session.commit()
+    return jsonify({'status': 'success'})
+
+
+@app.route('/mail', methods=['POST'])
+def sendMail():
+    requestJson = request.json
+    subject = 'Predictive Analysis report from Prophet AI'
+    message = requestJson['message']
+    recipient_email = requestJson['recipient_email']
+
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    message = message
+    msg.attach(MIMEText(message))
+
+    mailserver = smtplib.SMTP('smtp.gmail.com', 587)
+
+    # identify ourselves to smtp gmail client
+    mailserver.ehlo()
+    # secure our email with tls encryption
+    mailserver.starttls()
+    # re-identify ourselves as an encrypted connection
+    mailserver.ehlo()
+    mailserver.login('prophetai.system@gmail.com', 'hackathonhackers')
+    mailserver.sendmail('prophetai.system@gmail.com',
+                        recipient_email, msg.as_string())
     return jsonify({'status': 'success'})
 
 
